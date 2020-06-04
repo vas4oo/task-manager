@@ -1,0 +1,29 @@
+{
+    "tasks": [
+        {
+            "taskId": 1,
+            "userId": 1,
+            "taskStatus": 1,
+            "estimation": 2,
+            "desc": "A thief who steals corporate secrets through the use of dream-sharing technology is given the inverse task of planting an idea into the mind of a C.E.O."
+        }
+    ],
+    "users": [
+        {
+            "id": 1,
+            "username": "admin",
+            "firtsName": "admin",
+            "lastName": "admin",
+            "password": "admin",
+            "isAdmin": true
+        },
+        {
+            "id": 2,
+            "username": "test",
+            "firtsName": "test",
+            "lastName": "test",
+            "password": "123",
+            "isAdmin": false
+        }
+    ]
+}
