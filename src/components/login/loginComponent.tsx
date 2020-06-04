@@ -93,6 +93,7 @@ class LoginComponent extends React.Component<IProps, IState> {
             },
             () => {
               this.props.userLogin();
+              this.props.history.push(`/`);
             }
           );
         }

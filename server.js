@@ -32,8 +32,8 @@ function isAuthenticated({ username, password }) {
     return database.users.findIndex(user => user.username === username && user.password === password) !== -1
 }
 
-function checkIsAdmin({ username, password }) {
-    return database.users.find(user => user.username === username && user.password === password).isAdmin;
+function getUser({ username, password }) {
+    return database.users.find(user => user.username === username && user.password === password);
 }
 
 // Register New User
@@ -52,7 +52,7 @@ server.post('/auth/register', (req, res) => {
     var last_item_id = database.users[database.users.length - 1].id;
     database.users.push({ id: last_item_id + 1, username: username, password: password, firtsName: firtsName, lastName: lastName, isAdmin: false });
 
-    fs.readFile("./users.json", (err, data) => {
+    fs.readFile("./db/db.json", (err, data) => {
         if (err) {
             const status = 401
             const message = err
@@ -65,20 +65,19 @@ server.post('/auth/register', (req, res) => {
 
         //Add new user
         data.users.push({ id: last_item_id + 1, username: username, password: password, firtsName: firtsName, lastName: lastName, isAdmin: false }); //add some data
-        var writeData = fs.writeFile("./users.json", JSON.stringify(data), (err, result) => {  // WRITE
+        var writeData = fs.writeFile("./db/db.json", JSON.stringify(data), (err, result) => {  // WRITE
             if (err) {
                 const status = 401
                 const message = err
                 res.status(status).json({ status, message })
                 return
             }
+
         });
     });
 
     // Create token for new user
-    const access_token = createToken({ username, password })
-    console.log("Access Token:" + access_token);
-    res.status(200).json({ access_token })
+    res.status(200).json(true)
 })
 
 // Login to one of the users from ./users.json
@@ -92,11 +91,50 @@ server.post('/auth/login', (req, res) => {
         res.status(status).json({ status, message })
         return
     }
-    const isAdmin = checkIsAdmin({ username, password });
-    const access_token = createToken({ username, password, isAdmin })
+    const user = getUser({ username, password });
+    const access_token = createToken({ username, password, isAdmin: user.isAdmin, id: user.id })
     console.log("Access Token:" + access_token);
     res.status(200).json({ access_token })
 })
+
+server.put('/users', (req, res) => {
+    const user = req.body;
+    console.log('update user')
+    const userIndex = database.users.findIndex(userdb => userdb.id === user.id);
+    if (userIndex === -1) {
+        const status = 404
+        const message = 'user not found'
+        res.status(status).json({ status, message })
+        return
+    }
+
+    database.users.splice(userIndex, 1, user)
+
+    fs.readFile("./db/db.json", (err, data) => {
+        if (err) {
+            const status = 401
+            const message = err
+            res.status(status).json({ status, message })
+            return
+        };
+
+        // Get current users data
+        var data = JSON.parse(data.toString());
+
+        //Add new user
+        data.users.splice(userIndex, 1, user); //add some data
+        var writeData = fs.writeFile("./db/db.json", JSON.stringify(data), (err, result) => {  // WRITE
+            if (err) {
+                const status = 401
+                const message = err
+                res.status(status).json({ status, message })
+                return
+            }
+        });
+    });
+    res.status(200).json(true)
+})
+
 
 server.delete('/users/:id', (req, res) => {
     let id = req.params.id;
@@ -154,9 +192,28 @@ server.get('/users', (req, res) => {
     res.status(200).json({ users });
 });
 
+server.get('/users/:id', (req, res) => {
+    let id = req.params.id;
+    console.log('Get user by id ' + id);
+    const user = database.users.find(user => user.id === +id);
+    if (!user || user === undefined) {
+        const status = 404
+        const message = 'user not found'
+        res.status(status).json({ status, message })
+        return
+    }
+    res.status(200).json({ user });
+});
+
+
 server.get('/alltasks', (req, res) => {
     console.log('Get tasks');
     const tasks = database.tasks;
+    for (let task of tasks) {
+        let user = database.users.find(r => r.id === task.userId);
+        if (user)
+            task.forUser = user.username;
+    }
     res.status(200).json({ tasks });
 });
 
@@ -186,7 +243,7 @@ server.post('/tasks', (req, res) => {
     var last_item_id = database.tasks.length;
     task.taskId = database.tasks[last_item_id - 1].taskId + 1;
     database.tasks.push(task);
-    fs.readFile("./db.json", (err, data) => {
+    fs.readFile("./db/db.json", (err, data) => {
         if (err) {
             const status = 401
             const message = err
@@ -199,7 +256,7 @@ server.post('/tasks', (req, res) => {
 
         //Add new user
         data.tasks.push(task); //add some data
-        var writeData = fs.writeFile("./db.json", JSON.stringify(data), (err, result) => {  // WRITE
+        var writeData = fs.writeFile("./db/db.json", JSON.stringify(data), (err, result) => {  // WRITE
             if (err) {
                 const status = 401
                 const message = err
@@ -224,7 +281,7 @@ server.put('/tasks', (req, res) => {
 
     database.tasks.splice(taskIndex, 1, task)
 
-    fs.readFile("./db.json", (err, data) => {
+    fs.readFile("./db/db.json", (err, data) => {
         if (err) {
             const status = 401
             const message = err
@@ -237,7 +294,7 @@ server.put('/tasks', (req, res) => {
 
         //Add new user
         data.tasks.splice(taskIndex, 1, task); //add some data
-        var writeData = fs.writeFile("./db.json", JSON.stringify(data), (err, result) => {  // WRITE
+        var writeData = fs.writeFile("./db/db.json", JSON.stringify(data), (err, result) => {  // WRITE
             if (err) {
                 const status = 401
                 const message = err
@@ -263,7 +320,7 @@ server.delete('/tasks/:id', (req, res) => {
     database.tasks.splice(taskIndex, 1);
 
     //remove from file
-    fs.readFile("./db.json", (err, data) => {
+    fs.readFile("./db/db.json", (err, data) => {
         if (err) {
             const status = 401
             const message = err
@@ -276,7 +333,7 @@ server.delete('/tasks/:id', (req, res) => {
 
         data.tasks.splice(taskIndex, 1);
 
-        var writeData = fs.writeFile("./db.json", JSON.stringify(data), (err, result) => {  // WRITE
+        var writeData = fs.writeFile("./db/db.json", JSON.stringify(data), (err, result) => {  // WRITE
             if (err) {
                 const status = 401
                 const message = err

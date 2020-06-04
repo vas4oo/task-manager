@@ -3,6 +3,7 @@ import Spinner from '../../common/components/spinner/spinner';
 import { UserModel } from '../../models/userModel';
 import Button from '@material-ui/core/Button';
 import Growl from '../../common/components/growl/growl';
+import { NavLink } from "react-router-dom";
 import TextField from '@material-ui/core/TextField';
 import GrowlContent from '../../common/components/growl/growlContent';
 import AuthService from '../../services/authService';
@@ -224,7 +225,7 @@ class CreateNewAccountComponent extends React.Component<IProps, IState> {
                     <GrowlContent variant="success" message={'You have successfully created a new account.'} />
                 </div>
                 <div style={{ marginTop: '20px' }}>
-                    {'Now you can go to login'}
+                    {'Now you can go to '} <NavLink exact to="/login">login</NavLink>
                 </div>
             </>
 

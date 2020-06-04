@@ -1,6 +1,7 @@
 import axios from 'axios';
 import * as HelperFunctions from '../common/functions/helperFunctions';
 import { TaskModel } from '../models/taskModel';
+import { UserModel } from '../models/userModel';
 
 class MainService {
     constructor() {
@@ -18,6 +19,31 @@ class MainService {
             headers: {
                 "Content-Type": "application/json; charset=utf-8"
             }
+        })
+            .then(res => res.data)
+            .catch(error => Promise.reject(HelperFunctions.getErrorMessage(error)));
+    }
+
+    getUser(id: number) {
+        return axios({
+            url: `users/${id}`,
+            method: 'get',
+            headers: {
+                "Content-Type": "application/json; charset=utf-8"
+            }
+        })
+            .then(res => res.data)
+            .catch(error => Promise.reject(HelperFunctions.getErrorMessage(error)));
+    }
+
+    updateUser(user: UserModel) {
+        return axios({
+            url: `users`,
+            method: 'put',
+            headers: {
+                "Content-Type": "application/json; charset=utf-8"
+            },
+            data: user
         })
             .then(res => res.data)
             .catch(error => Promise.reject(HelperFunctions.getErrorMessage(error)));
@@ -60,7 +86,7 @@ class MainService {
     }
 
 
-    getMovie(id: number) {
+    getTask(id: number) {
         return axios({
             url: `task/${id}`,
             method: 'get',

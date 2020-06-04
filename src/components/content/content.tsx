@@ -6,6 +6,7 @@ import UsersComponent from "../users/users.component";
 import AuthService from "../../services/authService";
 import RegisterComponent from '../login/registerComponent';
 import LoginComponent from '../login/loginComponent';
+import TasksComponent from "../tasks/tasks.component";
 
 const NoMatch = () => (
   <div className="app-content">
@@ -31,6 +32,7 @@ class Content extends React.Component<IProps, IState> {
           <Route exact path="/" component={this.аuthService.isAuthenticated() ? HomeComponent : LoginComponent} />
           <Route exact path="/index.html" component={this.аuthService.isAuthenticated() ? HomeComponent : LoginComponent} />
           <Route exact path="/users" component={this.аuthService.isAuthenticated() ? UsersComponent : LoginComponent} />
+          <Route exact path="/tasks" component={this.аuthService.isAuthenticated() ? TasksComponent : LoginComponent} />
           <Route exact path="/register" component={this.аuthService.isAuthenticated() ? HomeComponent : RegisterComponent} />
           <Route exact path="/login" component={this.аuthService.isAuthenticated() ? HomeComponent : LoginComponent} />
 

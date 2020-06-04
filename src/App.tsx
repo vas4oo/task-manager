@@ -5,10 +5,13 @@ import Content from './components/content/content'
 import { BrowserRouter } from "react-router-dom";
 import HeaderComponent from './components/header/headerComponent';
 import AuthService from './services/authService';
+import * as actionTypes from './store/actionTypes';
 
 const authService = new AuthService();
 
-const App = () => {
+const App = (props) => {
+  if (authService.isAuthenticated() && !props.isUserLogged)
+    props.onUserLogin();
 
   return (
     <BrowserRouter>
@@ -27,5 +30,11 @@ const mapsStateToProps = state => {
   };
 };
 
+const mapDispatchToProps = dispatch => {
+  return {
+    onUserLogin: () => dispatch({ type: actionTypes.USER_LOGIN })
+  };
+};
 
-export default connect(mapsStateToProps)(App);
+
+export default connect(mapsStateToProps, mapDispatchToProps)(App);

@@ -32,7 +32,7 @@ const HeaderComponent = (props) => {
   return (
     <div className="app-header">
       <div style={{ display: 'flex' }}>
-        <div>
+        <div style={{ fontSize: 18 }}>
           Task Manager
         </div>
         <div style={{ display: 'flex', paddingLeft: 20 }}>
